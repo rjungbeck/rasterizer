@@ -1,0 +1,12 @@
+syntax: glob
+
+*.pyc
+*.pyo
+*.crx
+*.orig
+*.TMP
+order/*
+build/*
+dist/*
+
+
