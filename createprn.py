@@ -24,8 +24,11 @@ def printToFile(imageName, printerName, outName):
 	hDC.EndDoc()
 	hDC.DeleteDC()
 	
-	while os.stat(outName).st_size==0:
-		time.sleep(0.01)
+	for i in range(0, 100):
+		if os.stat(outName).st_size!=0:
+			return True
+		time.sleep(0.1)
+	return False
 
 def main():
 	parser=argparse.ArgumentParser(description="Print Image", epilog="(C) Copyright 2013 by RSJ Software GmbH Germering. All rights reserved.")

@@ -6,8 +6,6 @@ import tempfile
 import multiprocessing
 import sys
 
-import requests
-
 from createprn import printToFile
 import converter
 
@@ -93,6 +91,9 @@ class MuPdf():
 		self.dll.fz_close.argtypes=[c_void_p]
 		self.dll.fz_close.restype=None
 		
+		self.stream=None
+		self.doc=None
+		
 		self.context=self.dll.fz_new_context(None, None, FZ_STORE_UNLIMITED)
 			
 	def open(self, name):
@@ -102,6 +103,9 @@ class MuPdf():
 			
 	def load(self, content):
 		self.content=content
+		if self.context==None:
+			self.context=self.dll.fz_new_context(None, None, FZ_STORE_UNLIMITED)
+	
 		self.stream=self.dll.fz_open_memory(self.context, self.content, len(self.content))
 		self.doc=self.dll.fz_open_document_with_stream(self.context, "application/pdf", self.stream)
 		
@@ -135,114 +139,130 @@ class MuPdf():
 		self.page=None
 		
 	def close(self):
-		self.dll.fz_close(self.stream)
-		self.dll.fz_close_document(self.doc)
-		self.doc=None
+		if self.stream:
+			self.dll.fz_close(self.stream)
+			self.stream=None
+		if self.doc:
+			self.dll.fz_close_document(self.doc)
+			self.doc=None
 		
 	def freeContext(self):
-		self.dll.fz_free_context(self.context)
-		self.context=None
+		if self.context:
+			self.dll.fz_free_context(self.context)
+			self.context=None
+		
+class PipeProducer():
+	def __init__(self, globalParms):
+		self.globalParms=globalParms
 	
-def pipeMain(pipe):
-	try:
-		muPdf=MuPdf()
-		session=requests.Session()
-		curVersion=None
-		curSource=None
-		
-		parser=argparse.ArgumentParser(description="PDF Pipe Renderer", epilog="(C)Copyright 2013 by RSJ Software GmbH Germering. All rights reserved. Licensed under GPL V3", fromfile_prefix_chars="@")
-		parser.add_argument("--angle", type=int, default=-90, help="Rotation angle. Default: -90")
-		parser.add_argument("--resolution", type=int, default=300, help="Resolution in dpi. Default: 300")
-		parser.add_argument("--printer", type=str, default="Zebra 170XiII", help="Printer name")
-		parser.add_argument("--page", type=int, default=1,help="Page number (1-based). Default: 1")
-		parser.add_argument("--url", type=str, help="Download URL")
-		parser.add_argument("--pdf", type=argparse.FileType(mode="rb"), help="PDF file")
-		parser.add_argument("--exit", type=bool, default=False, help="Exit")
-		parser.add_argument("--pngPrefix", type=str, help="PNG prefix")
-		parser.add_argument("--prnPrefix", type=str, help="PRN prefix")
-		parser.add_argument("--version", type=str, default="", help="Pdf Version")
-		
-		while True:
-			reqString=pipe.recv()
-			req=parser.parse_args(reqString.split())
-			
-			if req.exit:
-				break
-				
-			if curSource!=req.url or curVersion!=req.version:
-				if req.url:
-					curSource=req.url
-					r=session.get(curSource)
-					muPdf.load(r.content)
-				elif req.pdf:
-					muPdf.load(req.pdf.read())
-					
-				count=muPdf.getPageCount()
-				curVersion=req.version
-				curPage=None
-				
-			if req.page!=curPage:
-				if req.page <count:
-					curPage=req.page
-					
-					muPdf.loadPage(curPage)
-					
-					if req.pngPrefix:
-						pngName="%s%d.png" %(req.pngPrefix, curPage)
-					else:
-						f=tempfile.NamedTemporaryFile(delete=False)
-						pngName=f.name
-						f.close()
+	def producePage(self):
+		self.muPdf.loadPage(self.curPage)
 						
-					muPdf.render(pngName, angle=req.angle, resolution=req.resolution)
-					
-					if req.printer:
-						if req.prnPrefix:
-							prnName="%d%d%.prn"%(req.prnPrefix, curPage)
-						else:
-							f=tempfile.NamedTemporaryFile(delete=False)
-							prnName=f.name
-							f.close()
-						printToFile(pngName, req.printer, prnName)
-						os.unlink(pngName)
-				else:
-					prnName=""
-					pngName=""
-				
-			if req.printer:
-				pipe.send(prnName)
+		if self.req.pngPrefix:
+			pngName="%s%d.png" %(self.req.pngPrefix, self.curPage)
+		else:
+			f=tempfile.NamedTemporaryFile(delete=False,prefix=self.req.tmpPrefix, suffix=".png")
+			pngName=f.name
+			f.close()
+							
+		self.muPdf.render(pngName, angle=self.req.angle, resolution=self.req.resolution)
+		self.muPdf.freePage()
+						
+		if self.req.printer:
+			if self.req.prnPrefix:
+				prnName="%d%d%.prn"%(self.req.prnPrefix, self.curPage)
 			else:
-				pipe.send(pngName)
+				f=tempfile.NamedTemporaryFile(delete=False, prefix=self.req.tmpPrefix, suffix=".prn")
+				prnName=f.name
+				f.close()
+			if printToFile(pngName, self.req.printer, prnName):
+				os.unlink(pngName)
+				return prnName
+			else:
+				return ""
+		return pngName
+
+	
+	def pipeMain(self):
+		try:
+			self.muPdf=MuPdf()
+			curVersion=None
+			curSource=None
+			
+			parser=argparse.ArgumentParser(description="PDF Pipe Renderer", epilog="(C)Copyright 2013 by RSJ Software GmbH Germering. All rights reserved. Licensed under GPL V3", fromfile_prefix_chars="@")
+			parser.add_argument("--angle", type=int, default=self.globalParms.angle, help="Rotation angle. Default: -90")
+			parser.add_argument("--resolution", type=int, default=self.globalParms.resolution, help="Resolution in dpi. Default: 300")
+			parser.add_argument("--printer", type=str, default=self.globalParms.printer, help="Printer name")
+			parser.add_argument("--page", type=int, default=self.globalParms.page,help="Page number (1-based). Default: 1")
+			parser.add_argument("--pdf", type=argparse.FileType(mode="rb"), help="PDF file")
+			parser.add_argument("--exit", type=bool, default=False, help="Exit")
+			parser.add_argument("--pngPrefix", type=str, default=self.globalParms.pngPrefix, help="PNG prefix")
+			parser.add_argument("--prnPrefix", type=str, default=self.globalParms.prnPrefix, help="PRN prefix")
+			parser.add_argument("--tmpPrefix", type=str, default=self.globalParms.tmpPrefix,  help="Temp prefix")
+			parser.add_argument("--version", type=str, default="", help="Pdf Version")
+			
+			while True:
+				reqString=sys.stdin.readline()
+				self.req=parser.parse_args(reqString.split())
 				
-				if req.page+1<count:
-					curPage=req.page+1
-					muPdf.loadPage(curPage)
-					if req.pngPrefix:
-						pngName="%s%d.png" %(req.pngPrefix, curPage)
+				if self.req.exit:
+					break
+					
+				if  curVersion!=self.req.version:
+					self.muPdf.close()
+					
+					self.muPdf.load(self.req.pdf.read())
+						
+					count=self.muPdf.getPageCount()
+					curVersion=self.req.version
+					self.curPage=None
+					
+				if self.req.page!=self.curPage:
+					if self.req.page <=count:
+						self.curPage=self.req.page
+						result=self.producePage()
 					else:
-						pngName=os.tempnam()
+						result=""
+
+				sys.stdout.write(result+"\n")
+				sys.stdout.flush()
 					
-					muPdf.render(pngName, angle=req.angle, resolution=req.resolution)
-					if req.printer:
-						if req.prnPrefix:
-							prnName="%d%d%.prn"%(req.prnPrefix, curPage)
-						else:
-							prnName=os.tempnam()
-					
-						printToFile(pngName, req.printer, prnName)
-						os.unlink(pngName)
-	except EOFError:
-		pass
+				if self.req.page+1<=count:
+					self.curPage=self.req.page+1
+					result=self.producePage()
+		except EOFError:
+			pass
 		
 def main():
 	parser=argparse.ArgumentParser(description="PDF Renderer", epilog="(C)Copyright 2013 by RSJ Software GmbH Germering. All rights reserved. Licensed under GPL V3", fromfile_prefix_chars="@")
-	parser.add_argument("--angle", type=int, default=-90, help="Rotation angle")
-	parser.add_argument("--resolution", type=int, default=300, help="Resolution in dpi")
-	parser.add_argument("inPdf", type=str, help="Input PDF file")
-	parser.add_argument("outPng", type=str, help="Output PNG prefix")
-	parser.add_argument("printer", type=str, default="Zebra 170XiII", help="Printer name")
-	parser.add_argument("prnPrefix", type=str, help="Output PRN prefix")
+	subparsers=parser.add_subparsers(help="Subcommands")
+	parserPipe=subparsers.add_parser("pipe", help="Start as pipe server")
+	parserPipe.add_argument("--angle", type=int, default=-90, help="Rotation angle. Default: -90")
+	parserPipe.add_argument("--resolution", type=int, default=300, help="Resolution in dpi. Default: 300")
+	parserPipe.add_argument("--printer", type=str, default="Zebra 170XiII", help="Printer name")
+	parserPipe.add_argument("--page", type=int, default=1,help="Page number (1-based). Default: 1")
+	parserPipe.add_argument("--url", type=str, default=None, help="Download URL")
+	parserPipe.add_argument("--pngPrefix", type=str, default=None, help="PNG prefix")
+	parserPipe.add_argument("--prnPrefix", type=str, default=None, help="PRN prefix")
+	parserPipe.add_argument("--tmpPrefix", type=str, default=None, help="Temp prefix")
+	parserPipe.set_defaults(func=pipe)
+	parserConvert=subparsers.add_parser("convert", help="Convert file")
+	parserConvert.add_argument("--angle", type=int, default=-90, help="Rotation angle")
+	parserConvert.add_argument("--resolution", type=int, default=300, help="Resolution in dpi")
+	parserConvert.add_argument("inPdf", type=str, help="Input PDF file")
+	parserConvert.add_argument("outPng", type=str, help="Output PNG prefix")
+	parserConvert.add_argument("printer", type=str, default="Zebra 170XiII", help="Printer name")
+	parserConvert.add_argument("prnPrefix", type=str,  help="Output PRN prefix")
+	parserConvert.set_defaults(func=convert)
 	parms=parser.parse_args()
+	parms.func(parms)
+	
+def pipe(parms):
+	
+	producer=PipeProducer(parms)
+	producer.pipeMain()
+		
+def convert(parms):
 	
 	start=datetime.datetime.utcnow()
 	muPdf=MuPdf()
@@ -253,7 +273,8 @@ def main():
 		pngName="%s%d.png" %(parms.outPng,i)
 		muPdf.render(pngName,angle=parms.angle, resolution=parms.resolution)
 		prnName="%s%d.prn"%(parms.prnPrefix, i)
-		printToFile(pngName, parms.printer, prnName,)
+		if parms.printer:
+			printToFile(pngName, parms.printer, prnName,)
 	muPdf.freePage()
 	muPdf.close()
 	muPdf.freeContext()
@@ -261,3 +282,5 @@ def main():
 	end=datetime.datetime.utcnow()
 	print end-start
 	
+if __name__=="__main__":
+	main()
