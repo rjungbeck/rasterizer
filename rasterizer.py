@@ -3,6 +3,7 @@ import datetime
 from ctypes import cdll,c_float, c_int, c_void_p, Structure, c_char_p,POINTER
 import tempfile
 import sys
+import os
 
 from createprn import printToFile
 
