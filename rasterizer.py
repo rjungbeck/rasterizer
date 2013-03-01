@@ -204,6 +204,7 @@ class PipeProducer():
 			parser.add_argument("--prnPrefix", type=str, default=self.globalParms.prnPrefix, help="PRN prefix")
 			parser.add_argument("--tmpPrefix", type=str, default=self.globalParms.tmpPrefix,  help="Temp prefix")
 			parser.add_argument("--version", type=str, default="", help="Pdf Version")
+			parser.add_argument("--noauto", type=bool, default=False, help="No automatic advance to next page")
 			
 			while True:
 				reqString=sys.stdin.readline()
@@ -230,10 +231,12 @@ class PipeProducer():
 
 				sys.stdout.write(result+"\n")
 				sys.stdout.flush()
+				
+				if not self.req.noauto:
 					
-				if self.req.page+1<=count:
-					self.curPage=self.req.page+1
-					result=self.producePage()
+					if self.req.page+1<=count:
+						self.curPage=self.req.page+1
+						result=self.producePage()
 		except EOFError:
 			pass
 		
