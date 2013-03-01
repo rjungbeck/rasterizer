@@ -24,9 +24,12 @@ def printToFile(imageName, printerName, outName):
 	hDC.EndDoc()
 	hDC.DeleteDC()
 	
-	for i in range(0, 100):
-		if os.stat(outName).st_size!=0:
-			return True
+	for i in range(0, 1000):
+		try:
+			if os.stat(outName).st_size!=0:
+				return True
+		except:
+			pass
 		time.sleep(0.1)
 	return False
 
