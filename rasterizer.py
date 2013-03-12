@@ -4,6 +4,7 @@ from ctypes import cdll,c_float, c_int, c_void_p, Structure, c_char_p,POINTER
 import tempfile
 import sys
 import os
+import shlex
 
 from createprn import printToFile
 
@@ -208,7 +209,7 @@ class PipeProducer():
 			
 			while True:
 				reqString=sys.stdin.readline()
-				self.req=parser.parse_args(reqString.split())
+				self.req=parser.parse_args(shlex.split(reqString))
 				
 				if self.req.exit:
 					break

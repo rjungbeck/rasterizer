@@ -1,7 +1,7 @@
 import sys
 from cx_Freeze import setup, Executable
 
-build_exe_options= {"optimize":2, "include_msvcr":True, "include_files":[("COPYING", "COPYING"),("libmupdf.dll", "libmupdf.dll")]}
+build_exe_options= {"optimize":2, "include_msvcr":True, "include_files":[("COPYING", "COPYING"),("libmupdf.dll", "libmupdf.dll")], "bin_excludes":["mswsock.dll", "powrprof.dll"]}
 bdist_msi_options={"upgrade_code":"{5304FD3F-EAFC-4829-945F-0CAB73948CA3}"}
 
 data_files=[("",["COPYING", "libmupdf.dll", r"dll\mfc90.dll", r"dll\mfc90u.dll", r"dll\mfcm90.dll", r"dll\mfcm90u.dll", r"dll\Microsoft.VC90.MFC.manifest"])]
