@@ -3,6 +3,9 @@ import py2exe
 import glob
 import sys
 
+if len(sys.argv)==1:
+	sys.argv.append("py2exe")
+	sys.argv.append("-q")
 
 data_files=[("",["COPYING", "libmupdf.dll", r"dll\mfc90.dll", r"dll\mfc90u.dll", r"dll\mfcm90.dll", r"dll\mfcm90u.dll", r"dll\Microsoft.VC90.MFC.manifest"]),
 	("Microsoft.VC90.CRT", glob.glob("Microsoft.VC90.CRT/*"))]
