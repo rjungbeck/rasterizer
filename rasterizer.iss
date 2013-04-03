@@ -31,7 +31,13 @@ MinVersion=0,5.01.2600sp2
 [InstallDelete]
 
 [Files]
-Source: dist\*; DestDir: {app};  Flags: ignoreversion overwritereadonly uninsrestartdelete recursesubdirs; 
+Source: dist\*; DestDir: {app};  Flags: ignoreversion overwritereadonly uninsrestartdelete recursesubdirs;
+Source: version.json; DestDir: {app}; Flags: ignoreversion overwritereadonly uninsrestartdelete;
+
+Source: *.py; DestDir: {app}\src;  Flags: ignoreversion overwritereadonly uninsrestartdelete; 
+Source: *.iss; DestDir: {app}\src;  Flags: ignoreversion overwritereadonly uninsrestartdelete; 
+Source: mupdf\*; DestDir: {app}\src\mupdf;  Flags: ignoreversion overwritereadonly uninsrestartdelete recursesubdirs; 
+
 
 [Run]
 

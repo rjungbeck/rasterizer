@@ -30,6 +30,9 @@ class MuPdf():
 		self.dll.fz_rotate.argtypes=[POINTER(Matrix), c_float]
 		self.dll.fz_rotate.restype=POINTER(Matrix)
 		
+		self.dll.fz_translate.argtypes=[POINTER(Matrix), c_float, c_float]
+		self.dll.fz_translate.restype=POINTER(Matrix)
+		
 		self.dll.fz_concat.argtypes=[POINTER(Matrix), POINTER(Matrix), POINTER(Matrix)]
 		self.dll.fz_concat.restype=POINTER(Matrix)
 		
@@ -116,16 +119,19 @@ class MuPdf():
 	def loadPage(self, num):
 		self.page=self.dll.fz_load_page(self.doc, num-1)
 		
-	def render(self,name,angle=0,resolution=300.0):
+	def render(self,name,angle=0,resolution=300.0, xDelta=0.0, yDelta=0.0):
 		transform=Matrix()
 		self.dll.fz_scale(transform, resolution/72.0, resolution/72.0)
 		transform1=Matrix()
 		transform2=Matrix()
 		self.dll.fz_rotate(transform2, angle)
 		self.dll.fz_concat(transform1, transform, transform2) 
+		transform3=Matrix()
+		self.dll.fz_translate(transform3, xDelta, yDelta)
+		self.dll.fz_concat(transform2, transform1, transform3)
 		rect=Rect()
 		self.dll.fz_bound_page(self.doc, self.page,rect)
-		self.dll.fz_transform_rect(rect, transform1)
+		self.dll.fz_transform_rect(rect, transform2)
 		bbox=BBox()
 		self.dll.fz_round_rect(bbox,rect)
 		fz_device_rgb=self.dll.fz_find_device_colorspace(self.context, "DeviceGray")
@@ -170,7 +176,7 @@ class PipeProducer():
 			pngName=f.name
 			f.close()
 							
-		self.muPdf.render(pngName, angle=self.req.angle, resolution=self.req.resolution)
+		self.muPdf.render(pngName, angle=self.req.angle, resolution=self.req.resolution, xDelta=self.req.xdelta, yDelta=self.req.ydelta)
 		self.muPdf.freePage()
 						
 		if self.req.printer:
@@ -181,7 +187,8 @@ class PipeProducer():
 				prnName=f.name
 				f.close()
 			if printToFile(pngName, self.req.printer, prnName):
-				os.unlink(pngName)
+				if not self.req.keep:
+					os.unlink(pngName)
 				return prnName
 			else:
 				return ""
@@ -206,6 +213,9 @@ class PipeProducer():
 			parser.add_argument("--tmpPrefix", type=str, default=self.globalParms.tmpPrefix,  help="Temp prefix")
 			parser.add_argument("--version", type=str, default="", help="Pdf Version")
 			parser.add_argument("--noauto", type=bool, default=False, help="No automatic advance to next page")
+			parser.add_argument("--keep", type=bool, default=self.globalParms.keep, help="Keep PNG")
+			parser.add_argument("--xdelta", type=int, default=self.globalParms.xdelta, help="xDelta in px")
+			parser.add_argument("--ydelta", type=int, default=self.globalParms.ydelta, help="yDelta in px")
 			
 			while True:
 				reqString=sys.stdin.readline()
@@ -222,8 +232,9 @@ class PipeProducer():
 					count=self.muPdf.getPageCount()
 					curVersion=self.req.version
 					self.curPage=None
-					
-				if self.req.page!=self.curPage:
+				
+				
+				if self.req.noauto or self.req.page!=self.curPage:
 					if self.req.page <=count:
 						self.curPage=self.req.page
 						result=self.producePage()
@@ -253,10 +264,15 @@ def main():
 	parserPipe.add_argument("--pngPrefix", type=str, default=None, help="PNG prefix")
 	parserPipe.add_argument("--prnPrefix", type=str, default=None, help="PRN prefix")
 	parserPipe.add_argument("--tmpPrefix", type=str, default=None, help="Temp prefix")
+	parserPipe.add_argument("--keep", type=bool, default=False, help="Keep PNG")
+	parserPipe.add_argument("--xdelta", type=int, default=0, help="xDelta in px")
+	parserPipe.add_argument("--ydelta", type=int, default=0, help="yDelta in px")
 	parserPipe.set_defaults(func=pipe)
 	parserConvert=subparsers.add_parser("convert", help="Convert file")
 	parserConvert.add_argument("--angle", type=int, default=-90, help="Rotation angle")
 	parserConvert.add_argument("--resolution", type=int, default=300, help="Resolution in dpi")
+	parserConvert.add_argument("--xdelta", type=int, default=0, help="xDelta in px")
+	parserConvert.add_argument("--ydelta", type=int, default=0, help="yDelta in px")
 	parserConvert.add_argument("inPdf", type=str, help="Input PDF file")
 	parserConvert.add_argument("outPng", type=str, help="Output PNG prefix")
 	parserConvert.add_argument("printer", type=str, default="Zebra 170XiII", help="Printer name")
@@ -279,7 +295,7 @@ def convert(parms):
 	for i in range(1, count+1):
 		muPdf.loadPage(i)
 		pngName="%s%d.png" %(parms.outPng,i)
-		muPdf.render(pngName,angle=parms.angle, resolution=parms.resolution)
+		muPdf.render(pngName,angle=parms.angle, resolution=parms.resolution, xDelta=parms.xdelta, yDelta=parms.ydelta)
 		prnName="%s%d.prn"%(parms.prnPrefix, i)
 		if parms.printer:
 			printToFile(pngName, parms.printer, prnName,)
