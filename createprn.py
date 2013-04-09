@@ -4,8 +4,8 @@ import time
 
 import win32print
 import win32ui
-import Image
-import ImageWin
+from PIL import Image
+from PIL import ImageWin
 
 def printToFile(imageName, printerName, outName):
 	hDC=win32ui.CreateDC()
