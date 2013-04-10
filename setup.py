@@ -8,7 +8,8 @@ if len(sys.argv)==1:
 	sys.argv.append("-q")
 
 data_files=[("",["COPYING", "libmupdf.dll", r"dll\mfc90.dll", r"dll\mfc90u.dll", r"dll\mfcm90.dll", r"dll\mfcm90u.dll", r"dll\Microsoft.VC90.MFC.manifest"]),
-	("Microsoft.VC90.CRT", glob.glob("Microsoft.VC90.CRT/*"))]
+	("Microsoft.VC90.CRT", glob.glob("Microsoft.VC90.CRT/*")),
+	("fonts", glob.glob("fonts/*"))]
 
 sys.path.append("Microsoft.VC90.CRT")
 
