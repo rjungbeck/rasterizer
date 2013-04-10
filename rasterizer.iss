@@ -27,8 +27,7 @@ WizardImageStretch=no
 MinVersion=0,5.01.2600sp2
 
 [Languages]
-
-[InstallDelete]
+Name: "en"; MessagesFile: "compiler:Default.isl"; LicenseFile: COPYING;
 
 [Files]
 Source: dist\*; DestDir: {app};  Flags: ignoreversion overwritereadonly uninsrestartdelete recursesubdirs;
