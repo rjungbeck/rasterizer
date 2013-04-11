@@ -181,7 +181,7 @@ class PipeProducer():
 			pngName=f.name
 			f.close()
 							
-		self.muPdf.render(pngName, angle=self.req.angle, resolution=self.req.resolution, xDelta=self.req.xdelta, yDelta=self.req.ydelta, aaLevel=self.req.aaLevel)
+		self.muPdf.render(pngName, angle=self.req.angle, resolution=self.req.resolution, xDelta=self.req.xdelta, yDelta=self.req.ydelta, aaLevel=self.req.aalevel)
 		self.muPdf.freePage()
 						
 		if self.req.printer:
