@@ -14,7 +14,7 @@ def pythonRelCall(relCommand, command, cwd=None):
 	pythonCall(fullPath + " " + command, cwd=cwd)
 
 def main():
-	parser=argparse.ArgumentParser(description="Rasterizer Builder", epilog="(C) Copyright 2013 by RSJ Software GmbH Germering. All rights resreved.")
+	parser=argparse.ArgumentParser(description="Rasterizer Builder", epilog="(C) Copyright 2013 by RSJ Software GmbH Germering. All rights reserved.")
 	parms=parser.parse_args()
 		
 	with open("version.json", "r") as f:
