@@ -2,9 +2,9 @@
 
 ## Features 
 
-Rasterize PDF files (page by page) into PNG files.
-Convert PNG file into printer specific PRN file with Windows printer driver.
-Command line and pipe interface
+* Rasterize PDF files (page by page) into PNG files.
+* Convert PNG file into printer specific PRN file with Windows printer driver.
+* Command line and pipe interface
 
 ## Command Line
     rasterizer --help
@@ -30,5 +30,8 @@ Command line and pipe interface
         --prnPrefix <prnPrefix>
         --tmpPrefix <tmpPrefix>
         --keep <keep>
+
+## Technology
+Python program using ctypes for interfacing with mupdf library and Windows GDI.
 
         
