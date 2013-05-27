@@ -7,6 +7,7 @@ import os
 import shlex
 
 from createprn import printToFile
+from PIL import Image,PcxImagePlugin
 
 class Matrix(Structure):
 	_fields_=[("a", c_float),("b", c_float),("c", c_float),("d", c_float),("e", c_float),("f", c_float)]
@@ -183,10 +184,18 @@ class PipeProducer():
 							
 		self.muPdf.render(pngName, angle=self.req.angle, resolution=self.req.resolution, xDelta=self.req.xdelta, yDelta=self.req.ydelta, aaLevel=self.req.aalevel)
 		self.muPdf.freePage()
-						
+		
+		if self.req.pcxPrefix:
+			pcxName="%s%d.pcx"%(self.pcxPrefix, self.curPage)
+			im=Image.open(pngName)
+			im.save(pcxName)
+			if not self.req.keep:
+				os.unlink(pngName)
+			return pcxName
+			
 		if self.req.printer:
 			if self.req.prnPrefix:
-				prnName="%d%d%.prn"%(self.req.prnPrefix, self.curPage)
+				prnName="%s%d%.prn"%(self.req.prnPrefix, self.curPage)
 			else:
 				f=tempfile.NamedTemporaryFile(delete=False, prefix=self.req.tmpPrefix, suffix=".prn",dir=os.getcwd())
 				prnName=f.name
@@ -216,6 +225,7 @@ class PipeProducer():
 			parser.add_argument("--pngPrefix", type=str, default=self.globalParms.pngPrefix, help="PNG prefix")
 			parser.add_argument("--prnPrefix", type=str, default=self.globalParms.prnPrefix, help="PRN prefix")
 			parser.add_argument("--tmpPrefix", type=str, default=self.globalParms.tmpPrefix,  help="Temp prefix")
+			parser.add_argument("--pcxPrefix", type=str, defualt=self.globalParms.pcxPrefix, help="PCX prefix")
 			parser.add_argument("--version", type=str, default="", help="Pdf Version")
 			parser.add_argument("--noauto", type=bool, default=False, help="No automatic advance to next page")
 			parser.add_argument("--keep", type=bool, default=self.globalParms.keep, help="Keep PNG")
@@ -239,7 +249,6 @@ class PipeProducer():
 					curVersion=self.req.version
 					self.curPage=None
 				
-				
 				if self.req.noauto or self.req.page!=self.curPage:
 					if self.req.page <=count:
 						self.curPage=self.req.page
@@ -259,7 +268,7 @@ class PipeProducer():
 			pass
 		
 def main():
-	parser=argparse.ArgumentParser(description="PDF Renderer", epilog="(C)Copyright 2013 by RSJ Software GmbH Germering. All rights reserved. Licensed under AGPL V3", fromfile_prefix_chars="@")
+	parser=argparse.ArgumentParser(description="PDF Renderer", epilog="(C) Copyright 2013 by RSJ Software GmbH Germering. All rights reserved. Licensed under AGPL V3", fromfile_prefix_chars="@")
 	subparsers=parser.add_subparsers(help="Subcommands")
 	parserPipe=subparsers.add_parser("pipe", help="Start as pipe server")
 	parserPipe.add_argument("--angle", type=int, default=-90, help="Rotation angle. Default: -90")
@@ -270,6 +279,7 @@ def main():
 	parserPipe.add_argument("--pngPrefix", type=str, default=None, help="PNG prefix")
 	parserPipe.add_argument("--prnPrefix", type=str, default=None, help="PRN prefix")
 	parserPipe.add_argument("--tmpPrefix", type=str, default=None, help="Temp prefix")
+	parserPipe.add_argument("--pcxPrefix", type=str, default=None, help="PCX prefix")
 	parserPipe.add_argument("--keep", type=bool, default=False, help="Keep PNG")
 	parserPipe.add_argument("--xdelta", type=int, default=0, help="xDelta in px")
 	parserPipe.add_argument("--ydelta", type=int, default=0, help="yDelta in px")
@@ -282,10 +292,11 @@ def main():
 	parserConvert.add_argument("--xdelta", type=int, default=0, help="xDelta in px")
 	parserConvert.add_argument("--ydelta", type=int, default=0, help="yDelta in px")
 	parserConvert.add_argument("--aalevel", type=int, default=-1, help="Anti aliasing level")
+	parserConvert.add_argument("--prnPrefix", type=str,  default=None, help="Output PRN prefix")
+	parserConvert.add_argument("--pcxPrefix", type=str, default=None, help="Output PCX prefix")
+	parserConvert.add_argument("--printer", type=str, default="Zebra 170XiII", help="Printer name")
 	parserConvert.add_argument("inPdf", type=str, help="Input PDF file")
 	parserConvert.add_argument("outPng", type=str, help="Output PNG prefix")
-	parserConvert.add_argument("printer", type=str, default="Zebra 170XiII", help="Printer name")
-	parserConvert.add_argument("prnPrefix", type=str,  help="Output PRN prefix")
 	parserConvert.set_defaults(func=convert)
 	parms=parser.parse_args()
 	parms.func(parms)
@@ -305,9 +316,16 @@ def convert(parms):
 		muPdf.loadPage(i)
 		pngName="%s%d.png" %(parms.outPng,i)
 		muPdf.render(pngName,angle=parms.angle, resolution=parms.resolution, xDelta=parms.xdelta, yDelta=parms.ydelta, aaLevel=parms.aalevel)
-		prnName="%s%d.prn"%(parms.prnPrefix, i)
-		if parms.printer:
-			printToFile(pngName, parms.printer, prnName,)
+		if parms.pcxPrefix:
+			im=Image.open(pngName)
+			pcxName="%s%d.pcx" %(parms.pcxPrefix,i)
+			print pcxName
+			im.save(pcxName)
+		
+		if parms.prnPrefix:
+			prnName="%s%d.prn"%(parms.prnPrefix, i)
+			if parms.printer:
+				printToFile(pngName, parms.printer, prnName,)
 	muPdf.freePage()
 	muPdf.close()
 	muPdf.freeContext()
