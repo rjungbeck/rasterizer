@@ -215,7 +215,7 @@ class PipeProducer():
 			curVersion=None
 			curSource=None
 			
-			parser=argparse.ArgumentParser(description="PDF Pipe Renderer", epilog="(C)Copyright 2013 by RSJ Software GmbH Germering. All rights reserved. Licensed under AGPL V3", fromfile_prefix_chars="@")
+			parser=argparse.ArgumentParser(description="PDF Pipe Renderer", epilog="(C) Copyright 2013 by RSJ Software GmbH Germering. All rights reserved. Licensed under AGPL V3", fromfile_prefix_chars="@")
 			parser.add_argument("--angle", type=int, default=self.globalParms.angle, help="Rotation angle. Default: -90")
 			parser.add_argument("--resolution", type=int, default=self.globalParms.resolution, help="Resolution in dpi. Default: 300")
 			parser.add_argument("--printer", type=str, default=self.globalParms.printer, help="Printer name")
@@ -225,7 +225,7 @@ class PipeProducer():
 			parser.add_argument("--pngPrefix", type=str, default=self.globalParms.pngPrefix, help="PNG prefix")
 			parser.add_argument("--prnPrefix", type=str, default=self.globalParms.prnPrefix, help="PRN prefix")
 			parser.add_argument("--tmpPrefix", type=str, default=self.globalParms.tmpPrefix,  help="Temp prefix")
-			parser.add_argument("--pcxPrefix", type=str, defualt=self.globalParms.pcxPrefix, help="PCX prefix")
+			parser.add_argument("--pcxPrefix", type=str, default=self.globalParms.pcxPrefix, help="PCX prefix")
 			parser.add_argument("--version", type=str, default="", help="Pdf Version")
 			parser.add_argument("--noauto", type=bool, default=False, help="No automatic advance to next page")
 			parser.add_argument("--keep", type=bool, default=self.globalParms.keep, help="Keep PNG")
