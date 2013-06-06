@@ -7,6 +7,8 @@ import os
 import shlex
 
 from createprn import printToFile
+from rll import RllConvert
+
 from PIL import Image,PcxImagePlugin
 
 class Matrix(Structure):
@@ -78,6 +80,12 @@ class MuPdf():
 		
 		self.dll.fz_write_png.argtypes=[c_void_p, c_void_p, c_char_p, c_int]
 		self.dll.fz_write_png.restype=None
+		
+		self.dll.fz_write_pam.argtypes=[c_void_p, c_void_p, c_char_p, c_int]
+		self.dll.fz_write_pam.restype=None
+		
+		self.dll.fz_write_pbm.argtypes=[c_void_p, c_void_p, c_char_p]
+		self.dll.fz_write_pbm.restype=None
 		
 		self.dll.fz_drop_pixmap.argtypes=[c_void_p, c_void_p]
 		self.dll.fz_drop_pixmap.restype=None
@@ -193,6 +201,13 @@ class PipeProducer():
 				os.unlink(pngName)
 			return pcxName
 			
+		if self.req.rllPrefix:
+			rllName="%s%d.pcx"%(self.rllPrefix, self.curPage)
+			RllConvert(ongName, rllName)
+			if not self.req.keep:
+				os.unlink(pngName)
+			return rllName
+			
 		if self.req.printer:
 			if self.req.prnPrefix:
 				prnName="%s%d%.prn"%(self.req.prnPrefix, self.curPage)
@@ -226,6 +241,7 @@ class PipeProducer():
 			parser.add_argument("--prnPrefix", type=str, default=self.globalParms.prnPrefix, help="PRN prefix")
 			parser.add_argument("--tmpPrefix", type=str, default=self.globalParms.tmpPrefix,  help="Temp prefix")
 			parser.add_argument("--pcxPrefix", type=str, default=self.globalParms.pcxPrefix, help="PCX prefix")
+			parser.add_argument("--rllPrefix", type=str, default=self.globalParms.rllPrefix, help="RLL prefix")
 			parser.add_argument("--version", type=str, default="", help="Pdf Version")
 			parser.add_argument("--noauto", type=bool, default=False, help="No automatic advance to next page")
 			parser.add_argument("--keep", type=bool, default=self.globalParms.keep, help="Keep PNG")
@@ -280,6 +296,7 @@ def main():
 	parserPipe.add_argument("--prnPrefix", type=str, default=None, help="PRN prefix")
 	parserPipe.add_argument("--tmpPrefix", type=str, default=None, help="Temp prefix")
 	parserPipe.add_argument("--pcxPrefix", type=str, default=None, help="PCX prefix")
+	parserPipe.add_argument("--rllPrefix", type=str, default=None, help="RLL prefix")	
 	parserPipe.add_argument("--keep", type=bool, default=False, help="Keep PNG")
 	parserPipe.add_argument("--xdelta", type=int, default=0, help="xDelta in px")
 	parserPipe.add_argument("--ydelta", type=int, default=0, help="yDelta in px")
@@ -294,6 +311,7 @@ def main():
 	parserConvert.add_argument("--aalevel", type=int, default=-1, help="Anti aliasing level")
 	parserConvert.add_argument("--prnPrefix", type=str,  default=None, help="Output PRN prefix")
 	parserConvert.add_argument("--pcxPrefix", type=str, default=None, help="Output PCX prefix")
+	parserConvert.add_argument("--rllPrefix", type=str, default=None, help="Output RLL prefix")
 	parserConvert.add_argument("--printer", type=str, default="Zebra 170XiII", help="Printer name")
 	parserConvert.add_argument("inPdf", type=str, help="Input PDF file")
 	parserConvert.add_argument("outPng", type=str, help="Output PNG prefix")
@@ -321,7 +339,12 @@ def convert(parms):
 			pcxName="%s%d.pcx" %(parms.pcxPrefix,i)
 			print pcxName
 			im.save(pcxName)
-		
+			
+		if parms.rllPrefix:
+			rllName="%s%d.rll" %(parms.rllPrefix,i)
+			print rllName
+			RllConvert(pngName, rllName)
+			
 		if parms.prnPrefix:
 			prnName="%s%d.prn"%(parms.prnPrefix, i)
 			if parms.printer:
