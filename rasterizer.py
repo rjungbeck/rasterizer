@@ -291,7 +291,6 @@ def main():
 	parserPipe.add_argument("--resolution", type=int, default=300, help="Resolution in dpi. Default: 300")
 	parserPipe.add_argument("--printer", type=str, default="Zebra 170XiII", help="Printer name")
 	parserPipe.add_argument("--page", type=int, default=1,help="Page number (1-based). Default: 1")
-	parserPipe.add_argument("--url", type=str, default=None, help="Download URL")
 	parserPipe.add_argument("--pngPrefix", type=str, default=None, help="PNG prefix")
 	parserPipe.add_argument("--prnPrefix", type=str, default=None, help="PRN prefix")
 	parserPipe.add_argument("--tmpPrefix", type=str, default=None, help="Temp prefix")
