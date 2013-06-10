@@ -194,7 +194,7 @@ class PipeProducer():
 		self.muPdf.freePage()
 		
 		if self.req.pcxPrefix:
-			pcxName="%s%d.pcx"%(self.pcxPrefix, self.curPage)
+			pcxName="%s%d.pcx"%(self.req.pcxPrefix, self.curPage)
 			im=Image.open(pngName)
 			im.save(pcxName)
 			if not self.req.keep:
@@ -202,8 +202,8 @@ class PipeProducer():
 			return pcxName
 			
 		if self.req.rllPrefix:
-			rllName="%s%d.pcx"%(self.rllPrefix, self.curPage)
-			RllConvert(ongName, rllName)
+			rllName="%s%d.rll"%(self.req.rllPrefix, self.curPage)
+			RllConvert(pngName, rllName)
 			if not self.req.keep:
 				os.unlink(pngName)
 			return rllName
