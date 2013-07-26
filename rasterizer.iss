@@ -36,6 +36,7 @@ Source: version.json; DestDir: {app}; Flags: ignoreversion overwritereadonly uni
 Source: *.py; DestDir: {app}\src;  Flags: ignoreversion overwritereadonly uninsrestartdelete; 
 Source: *.iss; DestDir: {app}\src;  Flags: ignoreversion overwritereadonly uninsrestartdelete; 
 Source: mupdf\*; DestDir: {app}\src\mupdf;  Flags: ignoreversion overwritereadonly uninsrestartdelete recursesubdirs; 
+Source: mupdf22\*; DestDir: {app}\src\mupdf22;  Flags: ignoreversion overwritereadonly uninsrestartdelete recursesubdirs; 
 
 
 [Run]
