@@ -17,22 +17,27 @@ SCALE=300.0/72.0
 class PipeProducer():
 	def __init__(self, globalParms):
 		self.globalParms=globalParms
-	
+		
+	def getTmpName(self, prefix, suffix):
+		if prefix==None or prefix.startswith("*") or prefix=="":
+			f=tempfile.NamedTemporaryFile(delete=False,prefix=self.req.tmpPrefix, suffix="."+suffix, dir=os.getcwd())
+			ret=f.name
+			f.close()
+		else:
+			ret="%s%d%s"%(prefix, self.curPage, suffix)
+		return ret
+			
 	def producePage(self):
 		self.muPdf.loadPage(self.curPage)
 						
-		if self.req.pngPrefix:
-			pngName="%s%d.png" %(self.req.pngPrefix, self.curPage)
-		else:
-			f=tempfile.NamedTemporaryFile(delete=False,prefix=self.req.tmpPrefix, suffix=".png", dir=os.getcwd())
-			pngName=f.name
-			f.close()
+		pngName=self.getTmpName(self.req.pngPrefix, "png")
 							
 		self.muPdf.render(pngName, angle=self.req.angle, resolution=self.req.resolution, xDelta=self.req.xdelta, yDelta=self.req.ydelta, aaLevel=self.req.aalevel)
 		self.muPdf.freePage()
 		
 		if self.req.pcxPrefix:
-			pcxName="%s%d.pcx"%(self.req.pcxPrefix, self.curPage)
+			pcxName=self.getTmpName(self.req.pcxPrefix, "pcx")
+			
 			im=Image.open(pngName)
 			im.save(pcxName)
 			if not self.req.keep:
@@ -40,19 +45,14 @@ class PipeProducer():
 			return pcxName
 			
 		if self.req.rllPrefix:
-			rllName="%s%d.rll"%(self.req.rllPrefix, self.curPage)
+			rllName=self.getTmpName(self.req.rllPrefix, "rll")
 			RllConvert(pngName, rllName)
 			if not self.req.keep:
 				os.unlink(pngName)
 			return rllName
 			
 		if self.req.printer:
-			if self.req.prnPrefix:
-				prnName="%s%d%.prn"%(self.req.prnPrefix, self.curPage)
-			else:
-				f=tempfile.NamedTemporaryFile(delete=False, prefix=self.req.tmpPrefix, suffix=".prn",dir=os.getcwd())
-				prnName=f.name
-				f.close()
+			prnName=self.getTmpName(self.req.prnPrefix, "prn")
 			if printToFile(pngName, self.req.printer, prnName):
 				if not self.req.keep:
 					os.unlink(pngName)
