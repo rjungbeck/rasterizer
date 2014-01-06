@@ -122,7 +122,7 @@ class PipeProducer():
 			pass
 		
 def main():
-	parser=argparse.ArgumentParser(description="PDF Renderer", epilog="(C) Copyright 2013 by RSJ Software GmbH Germering. All rights reserved. Licensed under AGPL V3", fromfile_prefix_chars="@")
+	parser=argparse.ArgumentParser(description="PDF Renderer", epilog="(C) Copyright 2013-2014 by RSJ Software GmbH Germering. All rights reserved. Licensed under AGPL V3", fromfile_prefix_chars="@")
 	subparsers=parser.add_subparsers(help="Subcommands")
 	parserPipe=subparsers.add_parser("pipe", help="Start as pipe server")
 	parserPipe.add_argument("--angle", type=int, default=-90, help="Rotation angle. Default: -90")
@@ -145,6 +145,9 @@ def main():
 	parserConvert.add_argument("--resolution", type=int, default=300, help="Resolution in dpi")
 	parserConvert.add_argument("--xdelta", type=int, default=0, help="xDelta in px")
 	parserConvert.add_argument("--ydelta", type=int, default=0, help="yDelta in px")
+	parserConvert.add_argument("--maxWidth", type=int, default=0, help="Max width in px")
+	parserConvert.add_argument("--maxHeight", type=int, default=0, help="Max height in px")
+	parserConvert.add_argument("--colorSpace", type=str, default="DeviceGray",help="Color space")
 	parserConvert.add_argument("--aalevel", type=int, default=-1, help="Anti aliasing level")
 	parserConvert.add_argument("--prnPrefix", type=str,  default=None, help="Output PRN prefix")
 	parserConvert.add_argument("--pcxPrefix", type=str, default=None, help="Output PCX prefix")
@@ -170,7 +173,7 @@ def convert(parms):
 	for i in range(1, count+1):
 		muPdf.loadPage(i)
 		pngName="%s%d.png" %(parms.outPng,i)
-		muPdf.render(pngName,angle=parms.angle, resolution=parms.resolution, xDelta=parms.xdelta, yDelta=parms.ydelta, aaLevel=parms.aalevel)
+		muPdf.render(pngName,angle=parms.angle, resolution=parms.resolution, xDelta=parms.xdelta, yDelta=parms.ydelta, aaLevel=parms.aalevel,maxWidth=parms.maxWidth, maxHeight=parms.maxHeight, colorSpace=parms.colorSpace)
 		if parms.pcxPrefix:
 			im=Image.open(pngName)
 			pcxName="%s%d.pcx" %(parms.pcxPrefix,i)
