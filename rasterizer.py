@@ -11,6 +11,7 @@ from rll import RllConvert
 from PIL import Image,PcxImagePlugin	
 
 from mupdf import MuPdf
+from serve import serve
 	
 SCALE=300.0/72.0
 		
@@ -124,6 +125,7 @@ class PipeProducer():
 def main():
 	parser=argparse.ArgumentParser(description="PDF Renderer", epilog="(C) Copyright 2013-2014 by RSJ Software GmbH Germering. All rights reserved. Licensed under AGPL V3", fromfile_prefix_chars="@")
 	subparsers=parser.add_subparsers(help="Subcommands")
+	
 	parserPipe=subparsers.add_parser("pipe", help="Start as pipe server")
 	parserPipe.add_argument("--angle", type=int, default=-90, help="Rotation angle. Default: -90")
 	parserPipe.add_argument("--resolution", type=int, default=300, help="Resolution in dpi. Default: 300")
@@ -138,8 +140,8 @@ def main():
 	parserPipe.add_argument("--xdelta", type=int, default=0, help="xDelta in px")
 	parserPipe.add_argument("--ydelta", type=int, default=0, help="yDelta in px")
 	parserPipe.add_argument("--aalevel", type=int, default=-1, help="Anti aliasing level")
-			
 	parserPipe.set_defaults(func=pipe)
+	
 	parserConvert=subparsers.add_parser("convert", help="Convert file")
 	parserConvert.add_argument("--angle", type=int, default=-90, help="Rotation angle")
 	parserConvert.add_argument("--resolution", type=int, default=300, help="Resolution in dpi")
@@ -156,6 +158,11 @@ def main():
 	parserConvert.add_argument("inPdf", type=str, help="Input PDF file")
 	parserConvert.add_argument("outPng", type=str, help="Output PNG prefix")
 	parserConvert.set_defaults(func=convert)
+	
+	parserServe=subparsers.add_parser("serve", help="Serve")
+	parserServe.add_argument("--port", type=int, default=8080, help="Server port")
+	parserServe.set_defaults(func=serve)
+	
 	parms=parser.parse_args()
 	parms.func(parms)
 	
