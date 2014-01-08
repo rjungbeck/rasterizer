@@ -23,6 +23,9 @@ def serve(parms):
 	reactor.listenTCP(parms.port, thisSite)
 	reactor.run()
 	
+def stop():
+	reactor.stop()
+	
 class ConvertHandler(webapp2.RequestHandler):
 	def get(self):
 		self.response.out.write("""
@@ -44,6 +47,9 @@ class ConvertHandler(webapp2.RequestHandler):
 		muPdf.loadPage(page)
 		targetName=str(uuid.uuid4())+".png"
 		muPdf.render(targetName,colorSpace="DeviceRGB")
+		muPdf.freePage()
+		muPdf.close()
+		muPdf.freeContext()
 		self.response.headers['Content-Type'] = "image/png"
 		with open(targetName,"rb") as pngFile:
 			self.response.out.write(pngFile.read())
