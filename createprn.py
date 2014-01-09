@@ -34,7 +34,7 @@ def printToFile(imageName, printerName, outName):
 	return False
 
 def main():
-	parser=argparse.ArgumentParser(description="Print Image", epilog="(C) Copyright 2013 by RSJ Software GmbH Germering. All rights reserved.")
+	parser=argparse.ArgumentParser(description="Print Image", epilog="(C) Copyright 2013-2014 by RSJ Software GmbH Germering. All rights reserved.")
 	parser.add_argument("image", type=str, help="Image file")
 	parser.add_argument("printer", type=str, help="Printer name")
 	parser.add_argument("out", type=str, help="Output file")

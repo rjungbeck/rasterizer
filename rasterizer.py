@@ -15,7 +15,7 @@ from serve import serve
 	
 SCALE=300.0/72.0
 		
-class PipeProducer():
+class PipeProducer(object):
 	def __init__(self, globalParms):
 		self.globalParms=globalParms
 		
