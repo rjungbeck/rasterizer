@@ -31,11 +31,13 @@ class ConvertHandler(webapp2.RequestHandler):
 		self.response.out.write("""
 			<html>
 				<body>
+					<h1>Rasterizer</h1>
 					<form method="POST" enctype="multipart/form-data">
 						<input type="file" name="pdf"></input>
 						<input type="number" name="page" vaue="1"></input>
 						<input type="submit" name="Submit"></input>
 					</form>
+					<p>You can can find the (AGPL 3 licensed)m rasterizer source code on <a href="https://github.com/rjungbeck/rasterizer">https://github.com/rjungbeck/rasterizer</a>.</p>
 				</body>
 			</html>
 			""")
