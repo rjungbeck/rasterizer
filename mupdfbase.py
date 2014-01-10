@@ -90,7 +90,7 @@ class MuPdfBase(object):
 		
 		w=abs(x0-x1)*resolution/72.0
 		h=abs(y0-y1)*resolution/72.0
-		if angle==90 or angle==270:
+		if angle==90 or angle==270 or angle==-90 or angle==-270:
 			w,h=h,w
 			
 		f=1.0

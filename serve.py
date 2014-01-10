@@ -37,7 +37,7 @@ class ConvertHandler(webapp2.RequestHandler):
 						<input type="number" name="page" vaue="1"></input>
 						<input type="submit" name="Submit"></input>
 					</form>
-					<p>You can can find the (AGPL 3 licensed)m rasterizer source code on <a href="https://github.com/rjungbeck/rasterizer">https://github.com/rjungbeck/rasterizer</a>.</p>
+					<p>You can can find the (AGPL 3 licensed) rasterizer source code on <a href="https://github.com/rjungbeck/rasterizer">https://github.com/rjungbeck/rasterizer</a>.</p>
 				</body>
 			</html>
 			""")
