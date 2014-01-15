@@ -33,8 +33,18 @@ class ConvertHandler(webapp2.RequestHandler):
 				<body>
 					<h1>Rasterizer</h1>
 					<form method="POST" enctype="multipart/form-data">
+						<label for="pdf">PDF File</label>
 						<input type="file" name="pdf"></input>
-						<input type="number" name="page" vaue="1"></input>
+						<br>
+						<label for="page">Page</label>
+						<input type="number" name="page" value="1"></input>
+						<br>
+						<label for="maxWidth">Maximum Width</label>
+						<input type="number" name="maxWidth"></input>
+						<br>
+						<label for="maxHeight">Maximum Height</label>
+						<input type="number" name="maxHeight"></input>
+						<br>
 						<input type="submit" name="Submit"></input>
 					</form>
 					<p>You can can find the (AGPL 3 licensed) rasterizer source code on <a href="https://github.com/rjungbeck/rasterizer">https://github.com/rjungbeck/rasterizer</a>.</p>
@@ -45,10 +55,24 @@ class ConvertHandler(webapp2.RequestHandler):
 	def post(self):
 		muPdf=mupdf.MuPdf()
 		muPdf.load(self.request.POST.get('pdf').file.read())
-		page=int(self.request.get("page"))
+		try:
+			page=int(self.request.get("page"))
+		except:
+			page=1
+			pass
+		try:
+			maxWidth=int(self.request.get("maxWidth"))
+		except:
+			maxWidth=None
+			pass
+		try:
+			maxHeight=int(self.request.get("maxHeight"))
+		except:
+			maxHeight=None
+			pass
 		muPdf.loadPage(page)
 		targetName=str(uuid.uuid4())+".png"
-		muPdf.render(targetName,colorSpace="DeviceRGB")
+		muPdf.render(targetName,colorSpace="DeviceRGB", maxWidth=maxWidth, maxHeight=maxHeight)
 		muPdf.freePage()
 		muPdf.close()
 		muPdf.freeContext()
