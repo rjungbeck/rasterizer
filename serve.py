@@ -70,9 +70,20 @@ class ConvertHandler(webapp2.RequestHandler):
 		except:
 			maxHeight=None
 			pass
+		
+		try:
+			x0=float(self.request.get("x0"))
+			y0=float(self.request.get("y0"))
+			x1=float(self.request.get("x1"))
+			y1=float(self.request.get("y1"))
+		except:
+			x0=0.0
+			x1=0.0
+			y0=0.0
+			y1=0.0
 		muPdf.loadPage(page)
 		targetName=str(uuid.uuid4())+".png"
-		muPdf.render(targetName,colorSpace="DeviceRGB", maxWidth=maxWidth, maxHeight=maxHeight)
+		muPdf.render(targetName,colorSpace="DeviceRGB", maxWidth=maxWidth, maxHeight=maxHeight, x0=x0, y0=y0, x1=x1, y1=y1)
 		muPdf.freePage()
 		muPdf.close()
 		muPdf.freeContext()
