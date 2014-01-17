@@ -85,8 +85,9 @@ class MuPdfBase(object):
 	def loadPage(self, num):
 		self.page=self.dll.fz_load_page(self.doc, num-1)
 		
-	def render(self,name,angle=0,resolution=300.0, xDelta=0.0, yDelta=0.0, aaLevel=-1,maxWidth=0, maxHeight=0, colorSpace="DeviceGray"):
-		x0,y0,x1,y1=self.getSize()
+	def render(self,name,angle=0,resolution=300.0, xDelta=0.0, yDelta=0.0, aaLevel=-1,maxWidth=0, maxHeight=0, colorSpace="DeviceGray", x0=0.0, y0=0.0, x1=0.0, y1=0.0):
+		if x0==0.0 and y0==0.0 and x1==0.0 and y1==0.0:
+			x0,y0,x1,y1=self.getSize()
 		
 		w=abs(x0-x1)*resolution/72.0
 		h=abs(y0-y1)*resolution/72.0
