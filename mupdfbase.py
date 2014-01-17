@@ -113,38 +113,27 @@ class MuPdfBase(object):
 		t=transform.Transform()
 		t.scale(resolution/72.0, resolution/72.0)
 		t.rotate(angle)
-		x0, y0, x1, y1=t.applyRect((x0, y0, x1, y1))
-		#t.translate(-x0, -y0)
-		t.translate(xDelta, yDelta)
 		
-		self.renderPage(name, t, int(w), int(h), aaLevel=aaLevel, colorSpace=colorSpace, angle=angle)
+		t3=transform.Transform()
+		t3.translate(xDelta, yDelta)
 		
-	def renderPage(self, name, t, width, height, aaLevel=-1, colorSpace="DeviceGray", angle=0):
+		t2=transform.Transform(a=t3.a, b=t3.b, c=t3.c, d=t3.d, e=t3.e, f=t3.f)
+		t2.transform(t)
+		if resolution:
+			t2.scale(72.0/resolution, 72.0/resolution)
+		
+		self.renderPage(name, t, t2, int(w), int(h), aaLevel=aaLevel, colorSpace=colorSpace, angle=angle)
+		
+	def renderPage(self, name, t, t2, width, height, aaLevel=-1, colorSpace="DeviceGray", angle=0):
 		
 		transform1=Matrix(a=t.a, b=t.b, c=t.c, d=t.d, e=t.e, f=t.f)
 	
-		if angle==0:
-			x0=0
-			x1=width
-			y0=0
-			y1=height
-		elif angle==90:
-			x0=-width
-			x1=0
-			y0=0
-			y1=height
-		elif angle==180:
-			x0=-width
-			x1=0
-			y0=-height
-			y1=0
-		elif angle==270:
-			x0=0
-			x1=width
-			y0=-height
-			y1=0
-					
-		bbox=BBox(x0=x0, y0=y0, x1=x1, y1=y1)
+		if angle == 90 or angle == 270:
+			width, height = height, width
+			
+		x0, y0, x1, y1 = t2.applyRect((0,0,width,height))
+	
+		bbox=BBox(x0=int(x0), y0=int(y0), x1=int(x1), y1=int(y1))
 		
 		if aaLevel!=-1:
 			self.dll.fz_set_aa_level(self.context, aaLevel)
