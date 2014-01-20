@@ -126,9 +126,9 @@ class MuPdfBase(object):
 		x0, y0, x1, y1 = t2.applyRect((0,0,w,h))
 		bbox=BBox(x0=int(x0), y0=int(y0), x1=int(x1), y1=int(y1))
 		
-		self.renderPage(name, t, bbox, int(w), int(h), aaLevel=aaLevel, colorSpace=colorSpace, )
+		self.renderPage(name, t, bbox, aaLevel=aaLevel, colorSpace=colorSpace, )
 		
-	def renderPage(self, name, t, bbox, width, height, aaLevel=-1, colorSpace="DeviceGray"):
+	def renderPage(self, name, t, bbox, aaLevel=-1, colorSpace="DeviceGray"):
 		
 		transform1=Matrix(a=t.a, b=t.b, c=t.c, d=t.d, e=t.e, f=t.f)
 	
