@@ -95,8 +95,8 @@ class MuPdfBase(object):
 		if angle < 0:
 			angle = 360 + angle
 
-		if angle==90 or angle==270:
-			w,h=h,w
+		if maxWidth and maxHeight and (angle==90 or angle==270):
+			maxWidth,maxHeight=maxHeight, maxWidth
 			
 		f=1.0
 		if maxWidth:
@@ -123,19 +123,15 @@ class MuPdfBase(object):
 		if resolution:
 			t2.scale(72.0/resolution, 72.0/resolution)
 		
-		self.renderPage(name, t, t2, int(w), int(h), aaLevel=aaLevel, colorSpace=colorSpace, angle=angle)
+		x0, y0, x1, y1 = t2.applyRect((0,0,w,h))
+		bbox=BBox(x0=int(x0), y0=int(y0), x1=int(x1), y1=int(y1))
 		
-	def renderPage(self, name, t, t2, width, height, aaLevel=-1, colorSpace="DeviceGray", angle=0):
+		self.renderPage(name, t, bbox, int(w), int(h), aaLevel=aaLevel, colorSpace=colorSpace, )
+		
+	def renderPage(self, name, t, bbox, width, height, aaLevel=-1, colorSpace="DeviceGray"):
 		
 		transform1=Matrix(a=t.a, b=t.b, c=t.c, d=t.d, e=t.e, f=t.f)
 	
-		if angle == 90 or angle == 270:
-			width, height = height, width
-			
-		x0, y0, x1, y1 = t2.applyRect((0,0,width,height))
-	
-		bbox=BBox(x0=int(x0), y0=int(y0), x1=int(x1), y1=int(y1))
-		
 		if aaLevel!=-1:
 			self.dll.fz_set_aa_level(self.context, aaLevel)
 			
