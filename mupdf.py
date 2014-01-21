@@ -1,13 +1,12 @@
 import sys
 
-from mupdfold import MuPdf as MuPdfOld
-from mupdfnew import MuPdf as MuPdfNew
+from mupdf11 import MuPdf as MuPdf11
+from mupdf12 import MuPdf as MuPdf12
 
 class MuPdf(object):
 	def __new__(cls, *args, **kw):
 		if sys.getwindowsversion().major>5:
-			ret=MuPdfNew(*args, **kw)
+			ret=MuPdf12(*args, **kw)
 		else:
-			ret=MuPdfOld(*args, **kw)
+			ret=MuPdf11(*args, **kw)
 		return ret
-		
