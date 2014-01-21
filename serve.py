@@ -5,27 +5,39 @@ from twisted.web import server, resource, static, iweb
 from twisted.internet import defer,reactor
 from twisted.web.wsgi import WSGIResource
 
-import webapp2	
+import webapp2
 
 import mupdf
 
 mapping=[
+	("/", "serve.MainHandler"),
 	("/convert", "serve.ConvertHandler")
 	]
-	
+
 def serve(parms):
-	
+
 	app = webapp2.WSGIApplication(mapping, debug=True)
 
 	wsgiResource=WSGIResource(reactor, reactor.getThreadPool(), app)
-		
+
 	thisSite=server.Site(wsgiResource)
 	reactor.listenTCP(parms.port, thisSite)
 	reactor.run()
-	
+
 def stop():
 	reactor.stop()
-	
+
+class MainHandler(webappe2.RequestHandler):
+	def get(self):
+		self.response.out.write("""
+			<html>
+				<body>
+					<h1>Rasterizer Web Service</h1>
+					<p>You can can find the (AGPL 3 licensed) rasterizer source code on <a href="https://github.com/rjungbeck/rasterizer">https://github.com/rjungbeck/rasterizer</a>.</p>
+				</body>
+			</html>
+			""")
+
 class ConvertHandler(webapp2.RequestHandler):
 	def get(self):
 		self.response.out.write("""
@@ -51,7 +63,7 @@ class ConvertHandler(webapp2.RequestHandler):
 				</body>
 			</html>
 			""")
-		
+
 	def post(self):
 		muPdf=mupdf.MuPdf()
 		muPdf.load(self.request.POST.get('pdf').file.read())
@@ -70,7 +82,7 @@ class ConvertHandler(webapp2.RequestHandler):
 		except:
 			maxHeight=None
 			pass
-		
+
 		try:
 			x0=float(self.request.get("x0"))
 			y0=float(self.request.get("y0"))
@@ -91,4 +103,3 @@ class ConvertHandler(webapp2.RequestHandler):
 		with open(targetName,"rb") as pngFile:
 			self.response.out.write(pngFile.read())
 		os.unlink(targetName)
-		
