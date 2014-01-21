@@ -27,7 +27,7 @@ def serve(parms):
 def stop():
 	reactor.stop()
 
-class MainHandler(webappe2.RequestHandler):
+class MainHandler(webapp2.RequestHandler):
 	def get(self):
 		self.response.out.write("""
 			<html>
