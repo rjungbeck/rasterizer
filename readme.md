@@ -17,11 +17,11 @@
         --xdelta <xdelta>
         --ydelta <ydelta>
         --aalevel <aalevel>
-	--prnPrefix <prnPrefix>
-	--pcxPrefix <pcxPrefix>
-	--rllPrefix <rllPrefix>
-	--printer <printerName>
-
+        --prnPrefix <prnPrefix>
+        --pcxPrefix <pcxPrefix>
+        --rllPrefix <rllPrefix>
+        --printer <printerName>
+ 
     rasterizer pipe
         --help
         --angle <angle>
@@ -34,11 +34,30 @@
         --pngPrefix <pngPrefix>
         --prnPrefix <prnPrefix>
         --tmpPrefix <tmpPrefix>
-	--pcxPrefix <pcxPrefix>
-	--rllPrefix <rllPrefix>
+        --pcxPrefix <pcxPrefix>
+        --rllPrefix <rllPrefix>
         --keep <keep>
+        
+    rasterizer.exe serve
+        --help
+        --port <httpPort>
+        
+    rastersvc.exe -p <port> install
+    
+    rastersvc.exe -p <port> update
+    
+    rastersvc.exe remove
+    
+    rastersvc.exe start
+    
+    rastersvc.exe stop
+    
+    rastersvc.exe restart
+        
+    rastersvc.exe debug
 	
 ## Technology
 Python program using ctypes for interfacing with mupdf library and Windows GDI.
+The web server uses Twisted.
 
         
