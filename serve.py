@@ -52,10 +52,14 @@ class ConvertHandler(webapp2.RequestHandler):
 						<input type="number" name="page" value="1"></input>
 						<br>
 						<label for="maxWidth">Maximum Width</label>
-						<input type="number" name="maxWidth"></input>
+						<input type="number" name="maxWidth" value="1000"></input>
 						<br>
 						<label for="maxHeight">Maximum Height</label>
-						<input type="number" name="maxHeight"></input>
+						<input type="number" name="maxHeight" value="1000"></input>
+						<br>
+						<label for="angle">Angle</label>
+						<input type="number" name="angle" value="0"></input>
+						
 						<br>
 						<input type="submit" name="Submit"></input>
 					</form>
@@ -67,21 +71,26 @@ class ConvertHandler(webapp2.RequestHandler):
 	def post(self):
 		muPdf=mupdf.MuPdf()
 		muPdf.load(self.request.POST.get('pdf').file.read())
+		
 		try:
 			page=int(self.request.get("page"))
 		except:
 			page=1
-			pass
+		
 		try:
 			maxWidth=int(self.request.get("maxWidth"))
 		except:
 			maxWidth=None
-			pass
+		
 		try:
 			maxHeight=int(self.request.get("maxHeight"))
 		except:
 			maxHeight=None
-			pass
+			
+		try:
+			angle=int(self.request.get("angle"))
+		except:
+			angle=0
 
 		try:
 			x0=float(self.request.get("x0"))
@@ -95,7 +104,7 @@ class ConvertHandler(webapp2.RequestHandler):
 			y1=0.0
 		muPdf.loadPage(page)
 		targetName=str(uuid.uuid4())+".png"
-		muPdf.render(targetName,colorSpace="DeviceRGB", maxWidth=maxWidth, maxHeight=maxHeight, x0=x0, y0=y0, x1=x1, y1=y1)
+		muPdf.render(targetName,colorSpace="DeviceRGB", maxWidth=maxWidth, maxHeight=maxHeight, angle=angle, x0=x0, y0=y0, x1=x1, y1=y1)
 		muPdf.freePage()
 		muPdf.close()
 		muPdf.freeContext()

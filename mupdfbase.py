@@ -63,55 +63,46 @@ class MuPdfBase(object):
 	def render(self,name,angle=0,resolution=300.0, xDelta=0.0, yDelta=0.0, aaLevel=-1,maxWidth=0, maxHeight=0, colorSpace="DeviceGray", x0=0.0, y0=0.0, x1=0.0, y1=0.0):
 		if x0==0.0 and y0==0.0 and x1==0.0 and y1==0.0:
 			x0,y0,x1,y1=self.getSize()
-
-		w=abs(x0-x1)*resolution/72.0
-		h=abs(y0-y1)*resolution/72.0
-
-		if angle < 0:
-			angle = 360 + angle
-
-		if maxWidth and maxHeight and (angle==90 or angle==270):
-			maxWidth,maxHeight=maxHeight, maxWidth
-
-		f=1.0
-		if maxWidth:
-			if w>maxWidth:
-				f=maxWidth*1.0/w
-
-		if maxHeight:
-			if h>maxHeight:
-				f=min(f, maxHeight*1.0/h)
-
-		resolution*=f
-		#w*=f
-		#h*=f
-
+		
+		#Determine size
 		t=transform.Transform()
 		t.scale(resolution/72.0, resolution/72.0)
 		t.rotate(angle)
+		
+		nx0, ny0, nx1, ny1 = t.applyRect((x0,y0,x1, y1))
+		
+		# Scale
+		if maxWidth or maxHeight:
+			f=1.0
+			if maxWidth:
+				if nx1-nx0> maxWidth:
+					f=maxWidth/(nx1-nx0)
 
+			if maxHeight:
+				if ny1-ny0>maxHeight:
+					f=min(maxHeight/(ny1-ny0), f)
+				
+			t.scale(f, f)
+			
+			nx0, ny0, nx1, ny1 = t.applyRect((x0,y0,x1, y1))
+		
+		# Determine position
 		t2=transform.Transform()
-		t2.translate(xDelta, yDelta)
-
+		t2.translate(-nx0, -ny0)
 		t2.transform(t)
-		#if resolution:
-		#	t2.scale(72.0/resolution, 72.0/resolution)
-
-		x0, y0, x1, y1 = t2.applyRect((0,0,w,h))
-
-		t3=transform.Transform()
-		t3.translate(-x0, -y0)
-		t2.transform(t3)
-
-		#bbox=BBox(x0=int(x0), y0=int(y0), x1=int(x1), y1=int(y1))
-		bbox=BBox(x0=0, y0=0, x1=int(w*f), y1=int(h*f))
-
+		t=t2
+		
+		# Shift
+		if xDelta or yDelta:
+			t.translate(-xDelta, -yDelta)
+			
 		#self.renderPage(name, t, bbox, aaLevel=aaLevel, colorSpace=colorSpace)
-		self.renderPage(name, t2, bbox, aaLevel=aaLevel, colorSpace=colorSpace)
+		self.renderPage(name, t, (int(nx1-nx0), int(ny1-ny0)), aaLevel=aaLevel, colorSpace=colorSpace)
 
-	def renderPage(self, name, t, bbox, aaLevel=-1, colorSpace="DeviceGray"):
+	def renderPage(self, name, t, size, aaLevel=-1, colorSpace="DeviceGray"):
 
 		transform1=Matrix(a=t.a, b=t.b, c=t.c, d=t.d, e=t.e, f=t.f)
+		bbox=BBox(x0=0, y0=0, x1=size[0], y1=size[1])
 
 		if aaLevel!=-1:
 			self.dll.fz_set_aa_level(self.context, aaLevel)
