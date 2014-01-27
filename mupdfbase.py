@@ -7,109 +7,115 @@ class Matrix(Structure):
 
 class Rect(Structure):
 	_fields_=[("x0", c_float), ("y0", c_float), ("x1", c_float), ("y1", c_float)]
-	
+
 class BBox(Structure):
 	_fields_=[("x0", c_int), ("y0", c_int), ("x1", c_int), ("y1", c_int)]
-	
+
 class MuPdfBase(object):
-	
+
 	def __init__(self):
-		
+
 		self.dll.fz_clear_pixmap_with_value.argtypes=[c_void_p, c_void_p, c_int]
 		self.dll.fz_clear_pixmap_with_value.restype=None
-		
+
 		self.dll.fz_new_draw_device.argtypes=[c_void_p, c_void_p]
 		self.dll.fz_new_draw_device.restype=c_void_p
-		
+
 		self.dll.fz_free_device.argtyppes=[c_void_p]
 		self.dll.fz_free_device.restype=None
-		
+
 		self.dll.fz_write_png.argtypes=[c_void_p, c_void_p, c_char_p, c_int]
 		self.dll.fz_write_png.restype=None
-		
+
 		self.dll.fz_drop_pixmap.argtypes=[c_void_p, c_void_p]
 		self.dll.fz_drop_pixmap.restype=None
-		
+
 		self.dll.fz_free_context.argtypes=[c_void_p]
 		self.dll.fz_free_context.restype=None
-		
+
 		self.dll.fz_open_memory.argtypes=[c_void_p, c_char_p, c_int]
 		self.dll.fz_open_memory.restype=c_void_p
-		
+
 		self.dll.fz_close.argtypes=[c_void_p]
 		self.dll.fz_close.restype=None
-		
+
 		self.dll.fz_set_aa_level.argtypes=[c_void_p, c_int]
 		self.dll.fz_set_aa_level.restype=None
-		
+
 		self.stream=None
 		self.doc=None
-		
+
 		self.setContext()
-		
+
 	def open(self, name):
 		with open(name, "rb") as f:
 			self.content=f.read()
 			self.load(self.content)
-			
+
 	def load(self, content):
 		self.content=content
 		if self.context==None:
 			self.context=self.setContext()
-	
+
 		self.stream=self.dll.fz_open_memory(self.context, self.content, len(self.content))
 		self.loadDocument(self.context,  self.stream)
-		
+
 	def render(self,name,angle=0,resolution=300.0, xDelta=0.0, yDelta=0.0, aaLevel=-1,maxWidth=0, maxHeight=0, colorSpace="DeviceGray", x0=0.0, y0=0.0, x1=0.0, y1=0.0):
 		if x0==0.0 and y0==0.0 and x1==0.0 and y1==0.0:
 			x0,y0,x1,y1=self.getSize()
-		
+
 		w=abs(x0-x1)*resolution/72.0
 		h=abs(y0-y1)*resolution/72.0
-		
+
 		if angle < 0:
 			angle = 360 + angle
 
 		if maxWidth and maxHeight and (angle==90 or angle==270):
 			maxWidth,maxHeight=maxHeight, maxWidth
-			
+
 		f=1.0
 		if maxWidth:
 			if w>maxWidth:
 				f=maxWidth*1.0/w
-				
+
 		if maxHeight:
 			if h>maxHeight:
 				f=min(f, maxHeight*1.0/h)
-		
+
 		resolution*=f
-		w*=f
-		h*=f
-		
+		#w*=f
+		#h*=f
+
 		t=transform.Transform()
 		t.scale(resolution/72.0, resolution/72.0)
 		t.rotate(angle)
-		
-		t3=transform.Transform()
-		t3.translate(xDelta, yDelta)
-		
-		t2=transform.Transform(a=t3.a, b=t3.b, c=t3.c, d=t3.d, e=t3.e, f=t3.f)
+
+		t2=transform.Transform()
+		t2.translate(xDelta, yDelta)
+
 		t2.transform(t)
-		if resolution:
-			t2.scale(72.0/resolution, 72.0/resolution)
-		
+		#if resolution:
+		#	t2.scale(72.0/resolution, 72.0/resolution)
+
 		x0, y0, x1, y1 = t2.applyRect((0,0,w,h))
-		bbox=BBox(x0=int(x0), y0=int(y0), x1=int(x1), y1=int(y1))
-		
-		self.renderPage(name, t, bbox, aaLevel=aaLevel, colorSpace=colorSpace)
-		
+
+		t3=transform.Transform()
+		t3.translate(-x0, -y0)
+		t2.transform(t3)
+
+		#bbox=BBox(x0=int(x0), y0=int(y0), x1=int(x1), y1=int(y1))
+		bbox=BBox(x0=0, y0=0, x1=int(w*f), y1=int(h*f))
+
+		#self.renderPage(name, t, bbox, aaLevel=aaLevel, colorSpace=colorSpace)
+		self.renderPage(name, t2, bbox, aaLevel=aaLevel, colorSpace=colorSpace)
+
 	def renderPage(self, name, t, bbox, aaLevel=-1, colorSpace="DeviceGray"):
-		
+
 		transform1=Matrix(a=t.a, b=t.b, c=t.c, d=t.d, e=t.e, f=t.f)
-	
+
 		if aaLevel!=-1:
 			self.dll.fz_set_aa_level(self.context, aaLevel)
-			
+
 		fz_device_rgb=self.findColorspace(colorSpace)
 		pix=self.dll.fz_new_pixmap_with_bbox(self.context, fz_device_rgb, bbox)
 		self.dll.fz_clear_pixmap_with_value(self.context, pix, 255)
@@ -120,18 +126,18 @@ class MuPdfBase(object):
 		self.dll.fz_write_png(self.context, pix, name, 0)
 		self.dll.fz_drop_pixmap(self.context, pix)
 		pix=None
-		
+
 	def close(self):
 		if self.stream:
 			self.dll.fz_close(self.stream)
 			self.stream=None
-			
+
 		self.closeDocument()
-			
+
 		if self.doc:
 			self.dll.fz_close_document(self.doc)
 			self.doc=None
-		
+
 	def freeContext(self):
 		if self.context:
 			self.dll.fz_free_context(self.context)
