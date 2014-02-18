@@ -28,6 +28,13 @@ MinVersion=0,5.01.2600sp2
 
 [Languages]
 Name: "en"; MessagesFile: "compiler:Default.isl"; LicenseFile: COPYING;
+Name: "de"; MessagesFile: "compiler:Languages\German.isl"; LicenseFile: COPYING;
+Name: "fr"; MessagesFile: "compiler:Languages\French.isl"; LicenseFile: COPYING;
+Name: "it"; MessagesFile: "compiler:Languages\Italian.isl"; LicenseFile: COPYING;
+Name: "ru"; MessagesFile: "compiler:Languages\Russian.isl"; LicenseFile: COPYING;
+Name: "es"; MessagesFile: "compiler:Languages\Spanish.isl"; LicenseFile: COPYING;
+Name: "ptbr"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"; LicenseFile: COPYING;
+Name: "uk"; MessagesFile: "compiler:Languages\Ukrainian.isl"; LicenseFile: COPYING;
 
 [Files]
 Source: dist\*; DestDir: {app};  Flags: ignoreversion overwritereadonly uninsrestartdelete recursesubdirs;
