@@ -9,10 +9,12 @@ class RasterizerService(servicebase.ServiceBase):
 	_svc_name_ = "RasterizerService"
 	_svc_display_name_ = "Rasterizer"
 	_svc_deps_=["tcpip"]
-	options={"-p": {"default":"8000", "name":"serverPort", "help":"Server Port"}}
+	options={"-p": {"default":"8000", "name":"serverPort", "help":"Server Port"},
+			"-c": {"default": "rastersvc.json", "name":"configFile", "help":"Config File"}}
 	
 	def  ServiceRun(self):
 		self.port=int(self.getOption("port", default="8000"))
+		self.configPath=self.getOption("configPath", default="rastersvc.json")
 		serve(self)
 
 	def ServiceStop(self):
