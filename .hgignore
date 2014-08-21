@@ -10,5 +10,6 @@ order/*
 build/*
 dist/*
 Output/*
+conf/*
 
 

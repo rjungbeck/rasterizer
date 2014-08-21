@@ -161,7 +161,6 @@ def main():
 	
 	parserServe=subparsers.add_parser("serve", help="Serve")
 	parserServe.add_argument("--config", type=str, default="conf/rastersvc.json", help="Config file")
-	parserServe.add_argument("--port", type=int, default=8080, help="Server port")
 	parserServe.set_defaults(func=serve)
 	
 	parms=parser.parse_args()

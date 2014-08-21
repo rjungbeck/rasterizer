@@ -27,7 +27,7 @@ accssToken=""
 def serve(parms):
 	global config
 	
-	with open(parms.configPath, "r") as configFile:
+	with open(parms.config, "r") as configFile:
 		config=json.load(configFile)
 		
 	global accessToken
