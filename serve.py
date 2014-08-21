@@ -18,7 +18,7 @@ mapping=[
 	("/", "serve.MainHandler"),
 	("/auth", "serve.AuthHandler"),
 	("/convert", "serve.ConvertHandler"),
-	("/esl", "serve.EslHandler")
+	("/batch", "serve.BatchHandler")
 	]
 
 config={}
@@ -140,7 +140,7 @@ class ConvertHandler(webapp2.RequestHandler):
 		
 oauth2Cache={}
 
-class EslHandler(webapp2.RequestHandler):
+class BatchHandler(webapp2.RequestHandler):
 	def post(self):
 		global oauth2Cache
 		
@@ -154,8 +154,8 @@ class EslHandler(webapp2.RequestHandler):
 			
 		data=self.request.POST.get("zip").file
 		with zipfile.ZipFile(dataFile, "r") as zip:
-			meta=json.load(zip.open("label.meta", "r"))
-			pdf=zip.read("label.pdf")
+			meta=json.load(zip.open("batch.meta", "r"))
+			pdf=zip.read("batch.pdf")
 			
 		muPdf=mupdf.MuPdf()
 		muPdf.load(pdf)
@@ -173,7 +173,7 @@ class EslHandler(webapp2.RequestHandler):
 			if not station in oauth2Cache:
 				oauth2Cache[target]=oauth2.OAuth2(clientId=metaStation["clientId"], clientSecret=metaStation["clientSecret"], refreshToken=metaStation["refreshToken"], authUrl=metaStation["authUrl"])
 				
-			targetUrl=metaStation["labelUrl"]+metaLabel["tag"]
+			targetUrl=metaStation["baserUrl"]+metaLabel["tag"]
 			png=""
 			with open(targetName, "rb") as pngFile:
 				png=pngFile.read()
