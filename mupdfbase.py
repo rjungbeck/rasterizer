@@ -61,6 +61,9 @@ class MuPdfBase(object):
 		self.loadDocument(self.context,  self.stream)
 
 	def render(self,name,angle=0,resolution=300.0, xDelta=0.0, yDelta=0.0, aaLevel=-1,maxWidth=0, maxHeight=0, colorSpace="DeviceGray", x0=0.0, y0=0.0, x1=0.0, y1=0.0):
+		
+		# Note trasformations are done from paper to pdf
+		
 		if x0==0.0 and y0==0.0 and x1==0.0 and y1==0.0:
 			x0,y0,x1,y1=self.getSize()
 		
@@ -82,19 +85,19 @@ class MuPdfBase(object):
 				if ny1-ny0>maxHeight:
 					f=min(maxHeight/(ny1-ny0), f)
 				
-			t.scale(f, f)
+			t.scale(f, f)	# Scling can be done with the pdf object (which id the position is newly computed)
 			
 			nx0, ny0, nx1, ny1 = t.applyRect((x0,y0,x1, y1))
 		
 		# Determine position
 		t2=transform.Transform()
-		t2.translate(-nx0, -ny0)
-		t2.transform(t)
+		t2.translate(-nx0, -ny0) 	# Move viewport to origin of coordinate system
+		t2.transform(t)			# Do it 1st
 		t=t2
 		
 		# Shift
 		if xDelta or yDelta:
-			t.translate(-xDelta, -yDelta)
+			t.translate(-xDelta, -yDelta)	# xDelta and yDelta is applied to the pdf (as in the past)
 			
 		#self.renderPage(name, t, bbox, aaLevel=aaLevel, colorSpace=colorSpace)
 		self.renderPage(name, t, (int(nx1-nx0), int(ny1-ny0)), aaLevel=aaLevel, colorSpace=colorSpace)
