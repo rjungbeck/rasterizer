@@ -1,0 +1,9 @@
+{
+	"httpPort":8000,
+	"httpsPort":8443,
+	"httpsKey":"conf/rsj2014.key",
+	"httpsCertificate":"conf/rsj2014.crt",
+	"clients": {
+		"4e00d009-a9c7-4b08-86f6-a411c9cf014f": {"clientSecret":"844aeeae-b2a1-4b83-a6bf-1cc24357dc7d", "refreshToken":"xxxxxxxxxx"}
+		}
+	}

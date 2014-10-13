@@ -1,5 +1,6 @@
 syntax: glob
 
+rsjbuild.json
 *.pyc
 *.pyo
 *.crx
@@ -9,5 +10,6 @@ order/*
 build/*
 dist/*
 Output/*
+conf/*
 
 
