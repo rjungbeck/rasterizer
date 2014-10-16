@@ -12,6 +12,7 @@ from PIL import Image,PcxImagePlugin
 
 from mupdf import MuPdf
 from serve import serve
+from printer import DoPrint
 	
 SCALE=300.0/72.0
 		
@@ -162,6 +163,13 @@ def main():
 	parserServe=subparsers.add_parser("serve", help="Serve")
 	parserServe.add_argument("--config", type=str, default="conf/rastersvc.json", help="Config file")
 	parserServe.set_defaults(func=serve)
+	
+	parserPrint=subparsers.add_parser("print", help="Print")
+	parserPrint.add_argument("--printer", type=str, default=None, help="Printer")
+	parserPrint.add_argument("--prnFile", type=str, default=None, help="PRN File")
+	parserPrint.add_argument("--docName", type=str, default=None, help="Document Name")
+	parserPrint.add_argument("inPdf", type=str, help="Input PDF file")
+	parserPrint.set_defaults(func=DoPrint)
 	
 	parms=parser.parse_args()
 	parms.func(parms)

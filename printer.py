@@ -15,16 +15,16 @@ PLANES=14
 HORZRES=8
 VERTRES=10
 
-
-def main():
-	parser=argparse.ArgumentParser(description="PDF Printer", epilog="(C)Copyright 2014 by RSJ Software GmbH Germering. All rights reserved.")
-	parser.add_argument("--printer", type=str, default=win32print.GetDefaultPrinter(), help="Printer name")
-	parser.add_argument("pdf", type=str, help="PDF File")
-	parms=parser.parse_args()
+def DoPrint(parms):
+	printProducer=PrintProducer()
 	
-	pp=PrintProducer()
-	pp.printPdf(parms.printer, parms.pdf)
+	if parms.printer==None:
+		parms.printer=win32print.GetDefaultPrinter()
 	
+	if parms.docName==None:
+		parms.docName=parms.inPdf
+		
+	printProducer.printPdf(parms.printer, parms.inPdf, docName=parms.docName, prnFile=parms.prnFile)
 	
 class PrintProducer(object):
 	
@@ -48,13 +48,10 @@ class PrintProducer(object):
 		self.hDC.DeleteDC()
 		self.hDC=None
 		
-	def  printPdf(self, printer, pdfName):
+	def  printPdf(self, printer, pdfName, prnFile=None, docName=""):
 		self.openPrinter(printer)
 		
-		if self.getPlanes() < 2:
-			colorspace="DeviceRGB"
-		else:
-			colorspace="DeviceRGB"
+		colorspace="DeviceRGB"
 		
 		resolutionX,resolutionY=self.getResolution()
 		printableArea=self.getPrintableArea()
@@ -64,7 +61,7 @@ class PrintProducer(object):
 			self.muPdf.load(pdfFile.read())
 			count=self.muPdf.getPageCount()
 			
-			self.hDC.StartDoc(pdfName)
+			self.hDC.StartDoc(docName, prnFile)
 			
 			for i in range(1, count+1):
 				self.muPdf.loadPage(i)
@@ -88,9 +85,6 @@ class PrintProducer(object):
 				with open(pngName, "rb") as pngFile:
 					bmp=Image.open(pngFile)
 				
-					# if colorspace=="DeviceGray":
-					#bmp=bmp.convert("1")
-				
 					x,y=bmp.size
 				
 					self.hDC.StartPage()
@@ -104,7 +98,16 @@ class PrintProducer(object):
 			self.hDC.EndDoc()
 				
 			self.closePrinter()
-				
+			
+def main():
+	parser=argparse.ArgumentParser(description="PDF Printer", epilog="(C) Copyright 2014 by RSJ Software GmbH Germering. All rights reserved.")
+	parser.add_argument("--printer", type=str, default=win32print.GetDefaultPrinter(), help="Printer name")
+	parser.add_argument("pdf", type=str, help="PDF File")
+	parms=parser.parse_args()
+	
+	pp=PrintProducer()
+	pp.printPdf(parms.printer, parms.pdf)
+	
 if __name__=="__main__":
 	main()
 	
