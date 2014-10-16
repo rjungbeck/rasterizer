@@ -14,6 +14,7 @@ import requests
 import mupdf
 import oauth2
 
+
 mapping=[
 	("/", "serve.MainHandler"),
 	("/auth", "serve.AuthHandler"),
@@ -39,10 +40,10 @@ def serve(parms):
 
 	thisSite=server.Site(wsgiResource)
 	
-	if config["httpPort"]:
+	if config.get("httpPort"):
 		reactor.listenTCP(config["httpPort"], thisSite)
 		
-	if config["httpsKey"]:
+	if config.get("httpsKey"):
 		from twisted.internet import ssl
 		sslContext=ssl.DefaultOpenSSLContextFactory(config["httpsKey"], config["httpsCertificate"])
 		reactor.listenSSL(config["httpsPort"], thisSite, sslContext)
@@ -193,7 +194,7 @@ class BatchHandler(webapp2.RequestHandler):
 		
 		self.response.headers["Content-Type"]="application/json"
 		self.response.out.write(json.dumps(rsp))
-		
+			
 class AuthHandler(webapp2.RequestHandler):
 	def post(self):
 		clientId=self.request.get("client_id")

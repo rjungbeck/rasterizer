@@ -13,7 +13,7 @@ class RasterizerService(servicebase.ServiceBase):
 	
 	def  ServiceRun(self):
 		self.port=int(self.getOption("port", default="8000"))
-		self.configPath=self.getOption("config", default="conf/rastersvc.json")
+		self.config=self.getOption("config", default="conf/rastersvc.json")
 		serve(self)
 
 	def ServiceStop(self):

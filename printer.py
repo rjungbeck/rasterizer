@@ -52,9 +52,9 @@ class PrintProducer(object):
 		self.openPrinter(printer)
 		
 		if self.getPlanes() < 2:
-			colorspace="DeviceGray"
+			colorspace="DeviceRGB"
 		else:
-			colorspace="DeviceColor"
+			colorspace="DeviceRGB"
 		
 		resolutionX,resolutionY=self.getResolution()
 		printableArea=self.getPrintableArea()
@@ -81,16 +81,15 @@ class PrintProducer(object):
 						angle=90
 						
 				handle,pngName=tempfile.mkstemp(suffix=".png")
-				handle.close()
-				
-				self.muPdf.render(pngName, angle, resolutionX,colorSpace=colorspace)
+				os.fdopen(handle).close()				
+				self.muPdf.render(pngName, angle, resolutionX,colorSpace=colorspace, maxWidth=printableArea[0], maxHeight=printableArea[1])
 				self.muPdf.freePage()
 				
 				with open(pngName, "rb") as pngFile:
 					bmp=Image.open(pngFile)
 				
-					if colorspace=="DeviceGray":
-						bmp=bmp.convert("1")
+					# if colorspace=="DeviceGray":
+					#bmp=bmp.convert("1")
 				
 					x,y=bmp.size
 				
